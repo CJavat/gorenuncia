@@ -1,11 +1,189 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Cuenta Regresiva - Último Día</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: linear-gradient(to bottom, #f0f9ff, #e0f2fe);
+        color: #1e3a8a;
+        margin: 0;
+      }
+      header {
+        text-align: center;
+        padding: 2rem 1rem;
+        background: #1e40af;
+        color: white;
+      }
+      main {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+      h2 {
+        margin-top: 2rem;
+        font-size: 1.5rem;
+        border-bottom: 2px solid #1e40af;
+        padding-bottom: 0.5rem;
+      }
+      .contador {
+        background: white;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        font-size: 1.2rem;
+      }
+      footer {
+        text-align: center;
+        padding: 1rem;
+        margin-top: 2rem;
+        font-size: 0.9rem;
+        background: #f0f9ff;
+        color: #1e3a8a;
+      }
+      .resaltado {
+        font-weight: bold;
+        font-size: 1.4rem;
+        color: #dc2626;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h1>🩺 Cuenta regresiva hacia mi último día laboral</h1>
+      <p>Último día: <b>28 de noviembre, 5:30 PM</b></p>
+    </header>
+
+    <main>
+      <section>
+        <h2>1️⃣ Días, horas, minutos y segundos restantes</h2>
+        <div class="contador" id="contador1"></div>
+      </section>
+
+      <section>
+        <h2>2️⃣ Días hábiles (L-V + sábado 18/oct)</h2>
+        <div class="contador" id="contador2"></div>
+      </section>
+
+      <section>
+        <h2>3️⃣ Semanas restantes</h2>
+        <div class="contador" id="contador3"></div>
+      </section>
+
+      <section>
+        <h2>4️⃣ Tiempo exacto en horas, minutos y segundos</h2>
+        <div class="contador" id="contador4"></div>
+      </section>
+
+      <section>
+        <h2>5️⃣ Tiempo hábil restante (L-V + 18/oct)</h2>
+        <div class="contador" id="contador5"></div>
+      </section>
+    </main>
+
+    <footer>© 2025 - Página creada con 💙 estilo doctor</footer>
+
+    <script>
+      const endDate = new Date("2025-11-28T17:30:00");
+      const extraWorkSaturday = new Date("2025-10-18");
+
+      // Horario laboral
+      const workStart = 9; // 9:00 am
+      const workEnd = 17.5; // 5:30 pm (17.5 en formato decimal)
+
+      function actualizarContadores() {
+        const ahora = new Date();
+
+        // 1️⃣ Diferencia exacta
+        let diffMs = endDate - ahora;
+        if (diffMs < 0) diffMs = 0;
+        let dias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        let horas = Math.floor(
+          (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        );
+        let minutos = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        let segundos = Math.floor((diffMs % (1000 * 60)) / 1000);
+        document.getElementById("contador1").innerHTML =
+          `<span class="resaltado">${dias}d ${horas}h ${minutos}m ${segundos}s</span>`;
+
+        // 2️⃣ Días hábiles
+        let fechaTemp = new Date(ahora);
+        let diasHabiles = 0;
+        while (fechaTemp <= endDate) {
+          let diaSemana = fechaTemp.getDay();
+          if (diaSemana >= 1 && diaSemana <= 5) diasHabiles++;
+          if (fechaTemp.toDateString() === extraWorkSaturday.toDateString())
+            diasHabiles++;
+          fechaTemp.setDate(fechaTemp.getDate() + 1);
+        }
+        document.getElementById("contador2").innerHTML =
+          `<span class="resaltado">${diasHabiles} días hábiles</span>`;
+
+        // 3️⃣ Semanas restantes
+        let semanas = Math.ceil(diffMs / (1000 * 60 * 60 * 24 * 7));
+        document.getElementById("contador3").innerHTML =
+          `<span class="resaltado">${semanas} semanas</span>`;
+
+        // 4️⃣ Horas, minutos y segundos exactos
+        let totalHoras = Math.floor(diffMs / (1000 * 60 * 60));
+        let totalMinutos = Math.floor(
+          (diffMs % (1000 * 60 * 60)) / (1000 * 60)
+        );
+        let totalSegundos = Math.floor((diffMs % (1000 * 60)) / 1000);
+        document.getElementById("contador4").innerHTML =
+          `<span class="resaltado">${totalHoras}h ${totalMinutos}m ${totalSegundos}s</span>`;
+
+        // 5️⃣ Horas hábiles con precisión
+        let horasHabiles = 0;
+        let cursor = new Date(ahora);
+
+        while (cursor < endDate) {
+          let diaSemana = cursor.getDay();
+          let esExtraSabado =
+            cursor.toDateString() === extraWorkSaturday.toDateString();
+
+          if ((diaSemana >= 1 && diaSemana <= 5) || esExtraSabado) {
+            // Calcular horas disponibles en este día
+            let inicio = new Date(cursor);
+            inicio.setHours(workStart, 0, 0, 0);
+
+            let fin = new Date(cursor);
+            fin.setHours(workEnd, 30, 0, 0);
+
+            // Si es hoy, arrancamos desde ahora
+            if (cursor.toDateString() === ahora.toDateString()) {
+              if (ahora > inicio) inicio = ahora;
+            }
+
+            // Si es el último día, cortamos en la hora exacta de salida
+            if (cursor.toDateString() === endDate.toDateString()) {
+              fin = endDate;
+            }
+
+            if (ahora < fin) {
+              let diff = (fin - inicio) / (1000 * 60 * 60);
+              if (diff > 0) horasHabiles += diff;
+            }
+          }
+          cursor.setDate(cursor.getDate() + 1);
+          cursor.setHours(0, 0, 0, 0);
+        }
+
+        let horasInt = Math.floor(horasHabiles);
+        let minutosHabiles = Math.floor((horasHabiles - horasInt) * 60);
+        document.getElementById("contador5").innerHTML =
+          `<span class="resaltado">${horasInt}h ${minutosHabiles}m</span> hábiles restantes`;
+      }
+
+      setInterval(actualizarContadores, 1000); // 🔥 cada segundo
+      actualizarContadores();
+    </script>
+  </body>
+</html>
